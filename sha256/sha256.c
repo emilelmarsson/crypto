@@ -126,7 +126,7 @@ int main(int argc, char *argv[]){
         char *message = argv[1]; // Message
 
         uint64_t l = strlen(message) * 8; // Message length (in bits)
-        uint64_t k = 448 - (l % 512) - 1; // Bits of zero-padding (final 64 bits contain the length of the message)
+        uint64_t k = (448 - (l % 512) - 1) % 512; // Bits of zero-padding (final 64 bits contain the length of the message)
         uint64_t N = (l / 512) + 1; // Message length (in 512-bit blocks)
 
         uint32_t* M = preprocessing(message, N, l, k);
