@@ -79,9 +79,9 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
     memcpy(&M[(N * WORDS_IN_BLOCK) - 2], &l, sizeof(l)); // Final 64 bits should contain the length of the message.
     
     #if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN // gcc compile-time little-endian check
-        uint32_t temp = M[(N * 16) - 2]; // Swap the last two 32-bit words. I'm not sure how to do this in a better way.
-        M[(N * 16) - 2] = M[(N * 16) - 1];
-        M[(N * 16) - 1] = temp;
+        uint32_t temp = M[(N * WORDS_IN_BLOCK) - 2]; // Swap the last two 32-bit words. I'm not sure how to do this in a better way.
+        M[(N * WORDS_IN_BLOCK) - 2] = M[(N * WORDS_IN_BLOCK) - 1];
+        M[(N * WORDS_IN_BLOCK) - 1] = temp;
     #endif
 
     return M;
