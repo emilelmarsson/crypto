@@ -74,7 +74,7 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
     #endif
 
     // Padding last block after message, a one followed by k zeros to ensure 512 bit block length.
-    M[(N-1)*16 + (l%BLOCK_SIZE)/WORD_SIZE] |= (0x1 << ((WORD_SIZE - 1) - (l % WORD_SIZE))); // Setting 1 bit. Unsure how to do this in a better way.
+    M[(N-1)*WORDS_IN_BLOCK + (l%BLOCK_SIZE)/WORD_SIZE] |= (0x1 << ((WORD_SIZE - 1) - (l % WORD_SIZE))); // Setting 1 bit. Unsure how to do this in a better way.
 
     memcpy(&M[(N * WORDS_IN_BLOCK) - 2], &l, sizeof(l)); // Final 64 bits should contain the length of the message.
     
@@ -92,7 +92,7 @@ static uint32_t* prepare_message_schedule(uint32_t *M){
     uint32_t* W = (uint32_t*) malloc(sizeof(uint32_t) * WORDS_IN_WORKING_SCHEDULE);
 
     for(int i=0; i<WORDS_IN_WORKING_SCHEDULE; i++){
-        if(i < 16){
+        if(i < WORDS_IN_BLOCK){
             W[i] = M[i];
         }else{
             W[i] = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
