@@ -90,10 +90,10 @@ uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k){
         }
     }
 
-    // Padding, 1 bit followed by k zeros to ensure 512 bit block length. Unsure how to do this in a better way.
-    M[(N-1)*16 + (l%512)/32] |= (0x1 << (31 - (l % 32)));
+    // Padding last block after message, a one followed by k zeros to ensure 512 bit block length.
+    M[(N-1)*16 + (l%512)/32] |= (0x1 << (31 - (l % 32))); // Setting 1 bit. Unsure how to do this in a better way.
 
-    memcpy(&M[(N * 16) - 2], &l, sizeof(l)); // Final 64 bits should contain the length of the message in bits
+    memcpy(&M[(N * 16) - 2], &l, sizeof(l)); // Final 64 bits should contain the length of the message.
     
     if(is_little_endian()){
         uint32_t temp = M[(N * 16) - 2]; // Swap the last two 32-bit words. I'm not sure how to do this in a better way.
@@ -104,7 +104,7 @@ uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k){
     return M;
 }
 
-// Prepare message schedule for current message block
+// Prepare a message schedule for compression of current message block.
 uint32_t* prepare_message_schedule(uint32_t *M){
     uint32_t* W = (uint32_t*) malloc(sizeof(uint32_t) * 64);
 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]){
         char *message = argv[1]; // Message
 
         uint64_t l = strlen(message) * 8; // Message length (in bits)
-        uint64_t k = 448 - (l % 512) - 1; // Bits of zero-padding
+        uint64_t k = 448 - (l % 512) - 1; // Bits of zero-padding (final 64 bits contain the length of the message)
         uint64_t N = (l / 512) + 1; // Message length (in 512-bit blocks)
 
         uint32_t* M = preprocessing(message, N, l, k);
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]){
         for(int i=0; i<N; i++){
             uint32_t *W = prepare_message_schedule(&M[i * 16]);
 
-            // Initialize the eight working variables with intermediate hash value.
+            // Initialize the eight working variables with first/intermediate hash value.
             uint32_t a = H[0];
             uint32_t b = H[1];
             uint32_t c = H[2];
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]){
             uint32_t g = H[6];
             uint32_t h = H[7];
 
-            // Compression function (all addition is mod 2^32)
+            // Compression function
             for(int t=0; t<64; t++){
                 uint32_t T1 = h + Sigma1(e) + ch(e, f, g) + K[t] + W[t];
                 uint32_t T2 = Sigma0(a) + maj(a, b, c);
@@ -159,6 +159,7 @@ int main(int argc, char *argv[]){
                 a = T1 + T2;
             }
 
+            // Calculate intermediate hash value
             H[0] = a + H[0];
             H[1] = b + H[1];
             H[2] = c + H[2];
