@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#define MAXBUFLEN 100000
 #define WORD_SIZE 32
 #define WORD_SIZE_BYTES 4
 #define BLOCK_SIZE 512
@@ -182,10 +183,28 @@ void sha256(char *message){
 }
 
 int main(int argc, char *argv[]){
-    if(argc < 2 || argc > 2){
+    if(argc < 2){
         printf("One argument expected.\n");
     }else{
-        sha256(argv[1]);
+        if(argc > 2 && strcmp(argv[1], "-f") == 0){ // Read from file
+            char message[MAXBUFLEN+1];
+            FILE *fp = fopen(argv[2], "r");
+            if(fp != NULL){
+                size_t len = fread(message, sizeof(char), MAXBUFLEN, fp);
+                if(ferror( fp ) != 0) {
+                    fputs("Error reading file.\n", stderr);
+                } else {
+                    message[len++] = '\0';
+
+                    sha256(message);
+                }
+                fclose(fp);
+            }else{
+                fputs("No such file.\n", stderr);
+            }
+        }else{ // Read from input
+            sha256(argv[1]);
+        }
     }
     return 0;
 }
