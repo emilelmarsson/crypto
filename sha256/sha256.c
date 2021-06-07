@@ -177,7 +177,6 @@ void sha256(char *message){
     for(int i=0; i<8; i++){
         printf("%08x", H[i]);
     }
-    printf("\n");
 
     free(M);
 }
@@ -197,6 +196,7 @@ int main(int argc, char *argv[]){
                     message[len++] = '\0';
 
                     sha256(message);
+                    printf("  %s\n", argv[2]);
                 }
                 fclose(fp);
             }else{
@@ -204,6 +204,7 @@ int main(int argc, char *argv[]){
             }
         }else{ // Read from input
             sha256(argv[1]);
+            printf("\n");
         }
     }
     return 0;
