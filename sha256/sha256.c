@@ -187,7 +187,7 @@ void hash_file(char* filename){
     if(fp != NULL){
         size_t len = fread(message, sizeof(char), MAXBUFLEN, fp);
         if(ferror( fp ) != 0) {
-            printf("%s: Error reading file.\n", filename);
+            fprintf(stderr, "%s: Error reading file.\n", filename);
         } else {
             message[len++] = '\0';
 
@@ -196,7 +196,7 @@ void hash_file(char* filename){
         }
         fclose(fp);
     }else{
-        printf("%s: No such file.\n", filename);
+        fprintf(stderr, "%s: No such file.\n", filename);
     }
 }
 
