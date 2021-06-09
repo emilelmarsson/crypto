@@ -103,17 +103,6 @@ static uint32_t* prepare_message_schedule(uint32_t *M){
     return W;
 }
 
-// Initialize hash values: (first 32 bits of the fractional parts of the square roots of the first 8 primes):
-static uint32_t H[8] = {
-    0x6a09e667,
-    0xbb67ae85,
-    0x3c6ef372,
-    0xa54ff53a,
-    0x510e527f,
-    0x9b05688c,
-    0x1f83d9ab,
-    0x5be0cd19};
-
 // First 32 bits of the fractional parts of the cube roots of the first 64 prime numbers.
 static const uint32_t K[64] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -126,6 +115,17 @@ static const uint32_t K[64] = {
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
 
 void sha256(char *message){
+    // Initialize hash values: (first 32 bits of the fractional parts of the square roots of the first 8 primes):
+    uint32_t H[8] = {
+        0x6a09e667,
+        0xbb67ae85,
+        0x3c6ef372,
+        0xa54ff53a,
+        0x510e527f,
+        0x9b05688c,
+        0x1f83d9ab,
+        0x5be0cd19};
+
     uint64_t l = strlen(message) * 8; // Message length (in bits)
     uint64_t k = (BITS_OF_ZERO_PADDING - (l % BLOCK_SIZE) - 1) % BLOCK_SIZE; // Bits of zero-padding (final 64 bits contain the length of the message)
     uint64_t N = (l / BLOCK_SIZE) + 1; // Message length (in 512-bit blocks)
@@ -181,26 +181,32 @@ void sha256(char *message){
     free(M);
 }
 
+void hash_file(char* filename){
+    char message[MAXBUFLEN+1];
+    FILE *fp = fopen(filename, "r");
+    if(fp != NULL){
+        size_t len = fread(message, sizeof(char), MAXBUFLEN, fp);
+        if(ferror( fp ) != 0) {
+            printf("%s: Error reading file.\n", filename);
+        } else {
+            message[len++] = '\0';
+
+            sha256(message);
+            printf("  %s\n", filename);
+        }
+        fclose(fp);
+    }else{
+        printf("%s: No such file.\n", filename);
+    }
+}
+
 int main(int argc, char *argv[]){
     if(argc < 2){
         printf("One argument expected.\n");
     }else{
         if(argc > 2 && strcmp(argv[1], "-f") == 0){ // Read from file
-            char message[MAXBUFLEN+1];
-            FILE *fp = fopen(argv[2], "r");
-            if(fp != NULL){
-                size_t len = fread(message, sizeof(char), MAXBUFLEN, fp);
-                if(ferror( fp ) != 0) {
-                    fputs("Error reading file.\n", stderr);
-                } else {
-                    message[len++] = '\0';
-
-                    sha256(message);
-                    printf("  %s\n", argv[2]);
-                }
-                fclose(fp);
-            }else{
-                fputs("No such file.\n", stderr);
+            for(int i=2; i<argc; i++){
+                hash_file(argv[i]);
             }
         }else{ // Read from input
             sha256(argv[1]);
