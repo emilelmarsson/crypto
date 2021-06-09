@@ -69,7 +69,7 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
     memcpy(M, message, l / 8); // Read message
 
     #if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN // gcc compile-time little-endian check
-        for(int i=0; i<N*16; i++){ // If little-endian, swap the bytes. SHA-2 is specified for big-endian integers.
+        for(int i=0; i<N*WORDS_IN_BLOCK; i++){ // If little-endian, swap the bytes. SHA-2 is specified for big-endian integers.
             M[i] = swap_uint32(M[i]);
         }
     #endif
@@ -200,9 +200,10 @@ void hash_file(char* filename){
     }
 }
 
+// Input on form "string to be hashed" or -f file2 file3 file4...
 int main(int argc, char *argv[]){
     if(argc < 2){
-        printf("One argument expected.\n");
+        fputs("Error: No argument supplied.\n", stderr);
     }else{
         if(argc > 2 && strcmp(argv[1], "-f") == 0){ // Read from file
             for(int i=2; i<argc; i++){
