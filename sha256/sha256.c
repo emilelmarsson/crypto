@@ -114,7 +114,7 @@ static const uint32_t K[64] = {
     0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
 
-void sha256(char *message){
+void sha256(char *message, size_t len){
     // Initialize hash values: (first 32 bits of the fractional parts of the square roots of the first 8 primes):
     uint32_t H[8] = {
         0x6a09e667,
@@ -126,7 +126,7 @@ void sha256(char *message){
         0x1f83d9ab,
         0x5be0cd19};
 
-    uint64_t l = strlen(message) * 8; // Message length (in bits)
+    uint64_t l = len * 8; // Message length (in bits)
     uint64_t k = (BITS_OF_ZERO_PADDING - (l % BLOCK_SIZE) - 1) % BLOCK_SIZE; // Bits of zero-padding (final 64 bits contain the length of the message)
     uint64_t N = (l / BLOCK_SIZE) + 1; // Message length (in 512-bit blocks)
 
@@ -181,7 +181,7 @@ void sha256(char *message){
     free(M);
 }
 
-void hash_file(char* filename){
+/*void hash_file(char* filename){
     char message[MAXBUFLEN+1];
     FILE *fp = fopen(filename, "r");
     if(fp != NULL){
@@ -198,11 +198,19 @@ void hash_file(char* filename){
     }else{
         fprintf(stderr, "%s: No such file.\n", filename);
     }
+}*/
+
+unsigned int as_hex(char c)
+{
+    if ('0' <= c && c <= '9') { return c - '0'; }
+    if ('a' <= c && c <= 'f') { return c + 10 - 'a'; }
+    if ('A' <= c && c <= 'F') { return c + 10 - 'A'; }
+    abort();
 }
 
 // Input on form "string to be hashed" or -f file2 file3 file4...
 int main(int argc, char *argv[]){
-    if(argc < 2){
+    /*if(argc < 2){
         fputs("Error: No argument supplied.\n", stderr);
     }else{
         if(argc > 2 && strcmp(argv[1], "-f") == 0){ // Read from file
@@ -213,6 +221,18 @@ int main(int argc, char *argv[]){
             sha256(argv[1]);
             printf("\n");
         }
+    }*/
+    char input[2000];
+    while (scanf("%s\n", input) == 1) {
+        size_t len = strlen(input);
+        uint8_t *message = (uint8_t*) malloc(len / 2);
+        for(int i=0; i<len; i+=2){
+            message[i/2] = (as_hex(input[i]) << 4) + as_hex(input[i+1]);
+        }
+        sha256((char*)message, len/2);
+        printf("\n");
+        free(message);
     }
+    printf("\n");
     return 0;
 }

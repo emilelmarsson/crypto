@@ -5,6 +5,9 @@ TARGET = sha256
 
 all: $(TARGET)
 
+run: $(TARGET)
+	cat sample.in | ./$(TARGET).o
+
 $(TARGET): $(TARGET).c
 	$(CC) $(CFLAGS) -o $(TARGET).o $(TARGET).c
 
