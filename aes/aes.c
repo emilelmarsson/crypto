@@ -41,9 +41,13 @@ static inline void add_round_key(uint8_t* state){
 int main(int argc, char *argv[]){
     char *message = "Detta är texten"; // 128-bit message
     uint8_t* state = (uint8_t*) malloc(BLOCK_SIZE);
+    uint32_t* columns = (uint32_t*) state;
     memcpy(state, message, BLOCK_SIZE);
     for(int i=0; i<BLOCK_SIZE; i++){
         printf("%02x\n", state[i]);
+    }
+    for(int i=0; i<BLOCK_SIZE/4; i++){
+        printf("%08x\n", columns[i]);
     }
     free(state);
     return 0;
