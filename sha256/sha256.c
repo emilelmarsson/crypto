@@ -222,9 +222,11 @@ int main(int argc, char *argv[]){
             printf("\n");
         }
     }*/
-    char input[2000];
-    while (scanf("%s\n", input) == 1) {
-        size_t len = strlen(input);
+    const size_t BUFFER_SIZE = 2000000; 
+    char input[BUFFER_SIZE];
+    while (fgets(input, BUFFER_SIZE, stdin)) {
+        size_t len = strlen(input) - 1;
+        //printf("Len: %zu\n", len);
         uint8_t *message = (uint8_t*) malloc(len / 2);
         for(int i=0; i<len; i+=2){
             message[i/2] = (as_hex(input[i]) << 4) + as_hex(input[i+1]);
