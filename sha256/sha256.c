@@ -136,7 +136,7 @@ void sha256(char *message, size_t len){
 
     uint64_t l = len * 8; // Message length (in bits)
     uint64_t k = (BITS_OF_ZERO_PADDING - (l % BLOCK_SIZE) - 1) % BLOCK_SIZE; // Bits of zero-padding (final 64 bits contain the length of the message)
-    printf("%" PRId64 "\n", k);
+    printf("%" PRId64 ", %" PRId64 ", %" PRId64 "\n", (l % BLOCK_SIZE), (BITS_OF_ZERO_PADDING - (l % BLOCK_SIZE) - 1), k);
     uint64_t N = (l / BLOCK_SIZE) + 1; // Message length (in 512-bit blocks)
 
     uint32_t* M = preprocessing(message, N, l, k);
