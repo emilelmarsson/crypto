@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <string.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #define MAXBUFLEN 100000
 #define WORD_SIZE 32
@@ -85,6 +86,15 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
         M[(N * WORDS_IN_BLOCK) - 1] = temp;
     #endif
 
+    for(int i=0; i<N; i++){
+        printf("BLOCK %d\n", (i+1));
+        for(int j=0; j<WORDS_IN_BLOCK; j++){
+            if(j != 0 && j % 4 == 0) printf("\n");
+            printf("%08x ", M[i*WORDS_IN_BLOCK + j]);
+        }
+        printf("\n\n");
+    }
+
     return M;
 }
 
@@ -127,8 +137,11 @@ void sha256(char *message){
         0x5be0cd19};
 
     uint64_t l = strlen(message) * 8; // Message length (in bits)
-    uint64_t k = (BITS_OF_ZERO_PADDING - (l % BLOCK_SIZE) - 1) % BLOCK_SIZE; // Bits of zero-padding (final 64 bits contain the length of the message)
-    uint64_t N = (l / BLOCK_SIZE) + 1; // Message length (in 512-bit blocks)
+    uint64_t k = (BITS_OF_ZERO_PADDING - l - 1) % BLOCK_SIZE; // Bits of zero-padding (final 64 bits contain the length of the message)
+    uint64_t N = ((l + BLOCK_SIZE + 64) / BLOCK_SIZE); // Message length (in 512-bit blocks)
+    
+    printf("Blocks: %" PRId64 "\n", N);
+    printf("Message length: %" PRId64 " bits\n\n", l);
 
     uint32_t* M = preprocessing(message, N, l, k);
 
