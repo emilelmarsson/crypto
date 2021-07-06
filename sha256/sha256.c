@@ -65,7 +65,7 @@ static inline uint64_t swap_uint64( uint64_t val )
 }
 
 static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k){
-    uint32_t* M = (uint32_t*) malloc(N * BLOCK_SIZE_BYTES);
+    uint32_t* M = (uint32_t*) calloc(N * WORDS_IN_BLOCK, sizeof(uint32_t));
 
     memcpy(M, message, l / 8); // Read message
 
@@ -91,7 +91,7 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
 
 // Prepare a message schedule for compression of current message block.
 static uint32_t* prepare_message_schedule(uint32_t *M){
-    uint32_t* W = (uint32_t*) malloc(sizeof(uint32_t) * WORDS_IN_WORKING_SCHEDULE);
+    uint32_t* W = (uint32_t*) calloc(WORDS_IN_WORKING_SCHEDULE, sizeof(uint32_t));
 
     for(int i=0; i<WORDS_IN_WORKING_SCHEDULE; i++){
         if(i < WORDS_IN_BLOCK){
