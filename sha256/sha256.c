@@ -76,7 +76,7 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
     #endif
 
     // Padding last block after message, a one followed by k zeros to ensure 512 bit block length.
-    M[(N-1)*WORDS_IN_BLOCK + (l%BLOCK_SIZE)/WORD_SIZE] |= (0x1 << ((WORD_SIZE - 1) - (l % WORD_SIZE))); // Setting 1 bit. Unsure how to do this in a better way.
+    M[(l/BLOCK_SIZE)*WORDS_IN_BLOCK + (l%BLOCK_SIZE)/WORD_SIZE] |= (0x1 << ((WORD_SIZE - 1) - (l % WORD_SIZE))); // Setting 1 bit. Unsure how to do this in a better way.
 
     memcpy(&M[(N * WORDS_IN_BLOCK) - 2], &l, sizeof(l)); // Final 64 bits should contain the length of the message.
     
@@ -86,14 +86,14 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
         M[(N * WORDS_IN_BLOCK) - 1] = temp;
     #endif
 
-    for(int i=0; i<N; i++){
+    /*for(int i=0; i<N; i++){
         printf("BLOCK %d\n", (i+1));
         for(int j=0; j<WORDS_IN_BLOCK; j++){
             if(j != 0 && j % 4 == 0) printf("\n");
             printf("%08x ", M[i*WORDS_IN_BLOCK + j]);
         }
         printf("\n\n");
-    }
+    }*/
 
     return M;
 }
@@ -140,8 +140,9 @@ void sha256(char *message){
     uint64_t k = (BITS_OF_ZERO_PADDING - l - 1) % BLOCK_SIZE; // Bits of zero-padding (final 64 bits contain the length of the message)
     uint64_t N = ((l + BLOCK_SIZE + 64) / BLOCK_SIZE); // Message length (in 512-bit blocks)
     
-    printf("Blocks: %" PRId64 "\n", N);
-    printf("Message length: %" PRId64 " bits\n\n", l);
+    /*printf("Blocks: %" PRId64 "\n", N);
+    printf("Message length: %" PRId64 " bits\n", l);
+    printf("Zero padding: %" PRId64 " bits\n\n", k);*/
 
     uint32_t* M = preprocessing(message, N, l, k);
 
