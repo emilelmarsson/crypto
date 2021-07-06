@@ -76,7 +76,7 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
     #endif
 
     // Padding last block after message, a one followed by k zeros to ensure 512 bit block length.
-    M[(N-1)*WORDS_IN_BLOCK + (l%BLOCK_SIZE)/WORD_SIZE] |= (0x1 << ((WORD_SIZE - 1) - (l % WORD_SIZE))); // Setting 1 bit. Unsure how to do this in a better way.
+    M[(l/BLOCK_SIZE)*WORDS_IN_BLOCK + (l%BLOCK_SIZE)/WORD_SIZE] |= (0x1 << ((WORD_SIZE - 1) - (l % WORD_SIZE))); // Setting 1 bit. Unsure how to do this in a better way.
 
     memcpy(&M[(N * WORDS_IN_BLOCK) - 2], &l, sizeof(l)); // Final 64 bits should contain the length of the message.
     
@@ -85,13 +85,6 @@ static uint32_t* preprocessing(char *message, uint64_t N, uint64_t l, uint64_t k
         M[(N * WORDS_IN_BLOCK) - 2] = M[(N * WORDS_IN_BLOCK) - 1];
         M[(N * WORDS_IN_BLOCK) - 1] = temp;
     #endif
-
-    for(int i=0; i<N; i++){
-        for(int j=0; j<WORDS_IN_BLOCK; j++){
-            printf("%08x\n", M[i*N + j]);
-        }
-        printf("\n");
-    }
 
     return M;
 }
@@ -136,7 +129,6 @@ void sha256(char *message, size_t len){
 
     uint64_t l = len * 8; // Message length (in bits)
     uint64_t k = (BITS_OF_ZERO_PADDING - (l % BLOCK_SIZE) - 1) % BLOCK_SIZE; // Bits of zero-padding (final 64 bits contain the length of the message)
-    printf("%" PRId64 ", %" PRId64 ", %" PRId64 "\n", (l % BLOCK_SIZE), (BITS_OF_ZERO_PADDING - (l % BLOCK_SIZE) - 1), k);
     uint64_t N = (l / BLOCK_SIZE) + 1; // Message length (in 512-bit blocks)
 
     uint32_t* M = preprocessing(message, N, l, k);
@@ -235,7 +227,6 @@ int main(int argc, char *argv[]){
     char input[BUFFER_SIZE];
     while (fgets(input, BUFFER_SIZE, stdin)) {
         size_t len = strlen(input) - 1;
-        printf("Len: %zu\n", len*4);
         uint8_t *message = (uint8_t*) malloc(len / 2);
         for(int i=0; i<len; i+=2){
             message[i/2] = (as_hex(input[i]) << 4) + as_hex(input[i+1]);
